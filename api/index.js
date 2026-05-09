@@ -8,14 +8,6 @@ const app = express();
 
 app.use(cors());
 
-// STATIC HTML
-app.use(express.static(path.join(__dirname, "../public")));
-
-// HOME
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/index.html"));
-});
-
 // API
 app.get("/api/apbd", async (req, res) => {
 
@@ -26,11 +18,10 @@ app.get("/api/apbd", async (req, res) => {
     const provinsi = req.query.provinsi || "01";
     const pemda = req.query.pemda || "10";
 
-    const targetUrl =
+    const url =
       `https://djpk.kemenkeu.go.id/portal/data/apbd?periode=${periode}&tahun=${tahun}&provinsi=${provinsi}&pemda=${pemda}`;
 
-    const response = await axios.get(targetUrl);
-
+    const response = await axios.get(url);
     const $ = cheerio.load(response.data);
 
     const hasil = [];
@@ -39,7 +30,7 @@ app.get("/api/apbd", async (req, res) => {
 
       const td = $(el).find("td");
 
-      if (td.length >= 5) {
+      if(td.length >= 5){
 
         const akun = $(td[1]).text().trim();
 
@@ -47,17 +38,15 @@ app.get("/api/apbd", async (req, res) => {
 
         let level = 1;
 
-        if (style.includes("2em")) level = 2;
-        if (style.includes("4em")) level = 3;
+        if(style.includes("2em")) level = 2;
+        if(style.includes("4em")) level = 3;
 
         hasil.push({
           akun,
           level,
           anggaran: $(td[2]).text().trim(),
           realisasi: $(td[3]).text().trim(),
-          persen: parseFloat(
-            $(td[4]).text().trim().replace(",", ".")
-          )
+          persen: parseFloat($(td[4]).text().trim().replace(",", "."))
         });
 
       }
@@ -66,24 +55,18 @@ app.get("/api/apbd", async (req, res) => {
 
     res.json({
       success: true,
-      metadata: {
-        judul: $("#judul").text().trim(),
-        wilayah: $("#wilayah").text().trim(),
-        keterangan: $("#keterangan").text().trim()
-      },
-      total: hasil.length,
       data: hasil
     });
 
-  } catch (err) {
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
-
+  } catch(err){
+    res.status(500).json({ error: err.message });
   }
 
+});
+
+// SERVE FRONTEND (INI YANG SERING LUPA)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
 module.exports = app;
