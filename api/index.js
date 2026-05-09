@@ -7,6 +7,12 @@ const app = express();
 
 app.use(cors());
 
+const path = require("path");
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "public", "index.html"));
+});
+
 // ========== API ==========
 app.get("/api/apbd", async (req, res) => {
 
