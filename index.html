@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard APBD</title>
+  <style>
+    :root {
+      --bg: #eef4ff;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --border: #d9e2f2;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --shadow: 0 18px 45px rgba(30, 64, 175, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 32rem),
+        linear-gradient(135deg, #f8fbff 0%, var(--bg) 100%);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 36px) 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      border-radius: 999px;
+      color: var(--primary-dark);
+      background: rgba(37, 99, 235, 0.08);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin: 16px 0 8px;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .control-card,
+    .summary-card,
+    .table-card {
+      border: 1px solid rgba(217, 226, 242, 0.9);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .control-card {
+      padding: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(110px, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    button {
+      min-height: 44px;
+      border-radius: 14px;
+      font: inherit;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 0 12px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    button {
+      grid-column: 1 / -1;
+      border: 0;
+      padding: 0 18px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(37, 99, 235, 0.24);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin: 22px 0;
+    }
+
+    .summary-card {
+      padding: 20px;
+    }
+
+    .summary-label {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .summary-value {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 25px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-note {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .table-card {
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-header h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .table-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .status {
+      align-self: start;
+      white-space: nowrap;
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--primary-dark);
+      background: rgba(37, 99, 235, 0.1);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+      background: #fff;
+    }
+
+    th,
+    td {
+      padding: 15px 18px;
+      border-bottom: 1px solid #eef2f8;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: #475467;
+      background: #f8fafc;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4) {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tr.level-1 {
+      background: #eff6ff;
+      font-weight: 900;
+    }
+
+    tr.level-2 {
+      background: #fbfdff;
+      font-weight: 750;
+    }
+
+    .akun {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .indent-1 { padding-left: 18px; }
+    .indent-2 { padding-left: 38px; }
+    .indent-3 { padding-left: 64px; color: #344054; }
+
+    .progress {
+      display: grid;
+      grid-template-columns: 1fr 56px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .bar {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5eaf3;
+    }
+
+    .bar span {
+      display: block;
+      width: var(--value);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--bar-color, var(--primary));
+    }
+
+    .message {
+      margin: 0;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .error {
+      color: var(--danger);
+      background: #fff5f5;
+    }
+
+    @media (max-width: 920px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding: 18px 0;
+      }
+
+      .hero {
+        gap: 16px;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .summary-card {
+        padding: 16px;
+      }
+
+      .table-header {
+        display: block;
+        padding: 18px;
+      }
+
+      .status {
+        display: inline-flex;
+        margin-top: 12px;
+      }
+
+      .table-wrap {
+        overflow: visible;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      th,
+      td {
+        display: block;
+        min-width: 0;
+        width: 100%;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody {
+        padding: 10px;
+        background: #f8fafc;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      tr.level-1 {
+        border-color: rgba(37, 99, 235, 0.28);
+        background: #eff6ff;
+      }
+
+      tr.level-2 {
+        background: #ffffff;
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: 108px minmax(0, 1fr);
+        gap: 12px;
+        border-bottom: 1px solid #eef2f8;
+        padding: 12px 14px;
+        text-align: left !important;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      .indent-1,
+      .indent-2,
+      .indent-3 {
+        padding-left: 14px;
+      }
+
+      .akun {
+        align-items: flex-start;
+      }
+
+      .progress {
+        grid-template-columns: 1fr 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">Integrasi API APBD</span>
+        <h1 id="pageTitle">Dashboard Postur APBD</h1>
+        <p class="subtitle" id="description">
+          Menampilkan data anggaran, realisasi, dan persentase realisasi dari endpoint
+          <strong>/api/apbd</strong> secara real-time.
+        </p>
+      </div>
+
+      <form class="control-card" id="filterForm">
+        <div class="controls">
+          <label>
+            Periode
+            <select id="periode" name="periode">
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Maret</option>
+              <option value="4">April</option>
+              <option value="5">Mei</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Agustus</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
+            </select>
+          </label>
+          <label>
+            Tahun
+            <input id="tahun" name="tahun" type="number" min="2000" max="2100" />
+          </label>
+          <button id="loadButton" type="submit">Muat Data APBD</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="summary-grid" aria-label="Ringkasan APBD">
+      <article class="summary-card">
+        <p class="summary-label">Wilayah</p>
+        <p class="summary-value" id="wilayah">-</p>
+        <p class="summary-note">Pemerintah daerah</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">Pendapatan</p>
+        <p class="summary-value" id="pendapatan">-</p>
+        <p class="summary-note" id="pendapatanRealisasi">Realisasi -</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">Belanja</p>
+        <p class="summary-value" id="belanja">-</p>
+        <p class="summary-note" id="belanjaRealisasi">Realisasi -</p>
+      </article>
+      <article class="summary-card">
+        <p class="summary-label">Pembiayaan</p>
+        <p class="summary-value" id="pembiayaan">-</p>
+        <p class="summary-note" id="pembiayaanRealisasi">Realisasi -</p>
+      </article>
+    </section>
+
+    <section class="table-card">
+      <div class="table-header">
+        <div>
+          <h2 id="tableTitle">Data APBD</h2>
+          <p id="keterangan">Silakan muat data dari API.</p>
+        </div>
+        <span class="status" id="status">Siap</span>
+      </div>
+      <div class="table-wrap" id="tableWrap">
+        <p class="message">Belum ada data yang ditampilkan.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("filterForm");
+    const periodeInput = document.getElementById("periode");
+    const tahunInput = document.getElementById("tahun");
+    const loadButton = document.getElementById("loadButton");
+    const statusEl = document.getElementById("status");
+    const tableWrap = document.getElementById("tableWrap");
+
+    const fields = {
+      pageTitle: document.getElementById("pageTitle"),
+      description: document.getElementById("description"),
+      tableTitle: document.getElementById("tableTitle"),
+      keterangan: document.getElementById("keterangan"),
+      wilayah: document.getElementById("wilayah"),
+      pendapatan: document.getElementById("pendapatan"),
+      pendapatanRealisasi: document.getElementById("pendapatanRealisasi"),
+      belanja: document.getElementById("belanja"),
+      belanjaRealisasi: document.getElementById("belanjaRealisasi"),
+      pembiayaan: document.getElementById("pembiayaan"),
+      pembiayaanRealisasi: document.getElementById("pembiayaanRealisasi"),
+    };
+
+    function setCurrentPeriod() {
+      const now = new Date();
+      periodeInput.value = String(now.getMonth() + 1);
+      tahunInput.value = String(now.getFullYear());
+    }
+
+    function setLoading(isLoading) {
+      loadButton.disabled = isLoading;
+      loadButton.textContent = isLoading ? "Memuat..." : "Muat Data APBD";
+      statusEl.textContent = isLoading ? "Mengambil data" : "Data siap";
+    }
+
+    function setError(message) {
+      statusEl.textContent = "Gagal";
+      tableWrap.innerHTML = `<p class="message error">${escapeHtml(message)}</p>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getBarColor(value) {
+      if (value >= 75) return "var(--success)";
+      if (value >= 30) return "var(--warning)";
+      return "var(--primary)";
+    }
+
+    function findAccount(data, keyword) {
+      return data.find((item) => item.level === 1 && item.akun.toLowerCase().includes(keyword));
+    }
+
+    function updateSummary(payload) {
+      const { metadata, data } = payload;
+      const pendapatan = findAccount(data, "pendapatan");
+      const belanja = findAccount(data, "belanja");
+      const pembiayaan = findAccount(data, "pembiayaan");
+
+      fields.pageTitle.textContent = metadata.judul || "Dashboard Postur APBD";
+      fields.tableTitle.textContent = metadata.judul || "Data APBD";
+      fields.wilayah.textContent = metadata.wilayah || "-";
+      fields.keterangan.textContent = metadata.keterangan || "Tidak ada keterangan.";
+      fields.description.innerHTML = `Pantauan postur APBD untuk <strong>${escapeHtml(metadata.wilayah || "wilayah terpilih")}</strong> berdasarkan periode dan tahun yang dipilih.`;
+
+      fields.pendapatan.textContent = pendapatan?.anggaran || "-";
+      fields.pendapatanRealisasi.textContent = `Realisasi ${pendapatan?.realisasi || "-"} (${pendapatan?.persen ?? 0}%)`;
+      fields.belanja.textContent = belanja?.anggaran || "-";
+      fields.belanjaRealisasi.textContent = `Realisasi ${belanja?.realisasi || "-"} (${belanja?.persen ?? 0}%)`;
+      fields.pembiayaan.textContent = pembiayaan?.anggaran || "-";
+      fields.pembiayaanRealisasi.textContent = `Realisasi ${pembiayaan?.realisasi || "-"} (${pembiayaan?.persen ?? 0}%)`;
+    }
+
+    function renderTable(data) {
+      if (!data.length) {
+        tableWrap.innerHTML = '<p class="message">API berhasil diakses, tetapi data kosong.</p>';
+        return;
+      }
+
+      const rows = data.map((item) => {
+        const percent = Number(item.persen || 0);
+        const safePercent = Math.max(0, Math.min(percent, 100));
+
+        return `
+          <tr class="level-${item.level}">
+            <td class="indent-${item.level}" data-label="Akun">
+              <span class="akun">${escapeHtml(item.akun)}</span>
+            </td>
+            <td data-label="Anggaran">${escapeHtml(item.anggaran)}</td>
+            <td data-label="Realisasi">${escapeHtml(item.realisasi)}</td>
+            <td data-label="Persen">
+              <div class="progress">
+                <div class="bar" aria-hidden="true"><span style="--value: ${safePercent}%; --bar-color: ${getBarColor(percent)}"></span></div>
+                <strong>${percent.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%</strong>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      tableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Akun</th>
+              <th>Anggaran</th>
+              <th>Realisasi</th>
+              <th>Persen</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    async function loadApbd() {
+      const params = new URLSearchParams({
+        periode: periodeInput.value,
+        tahun: tahunInput.value,
+      });
+
+      setLoading(true);
+
+      try {
+        const response = await fetch(`/api/apbd?${params.toString()}`);
+        const payload = await response.json();
+
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.message || "Data APBD tidak berhasil dimuat.");
+        }
+
+        updateSummary(payload);
+        renderTable(payload.data || []);
+        statusEl.textContent = `Berhasil memuat ${payload.data?.length || 0} akun`;
+      } catch (error) {
+        setError(error.message || "Terjadi kesalahan saat menghubungi API.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadApbd();
+    });
+
+    setCurrentPeriod();
+    loadApbd();
+  </script>
+</body>
+</html>
