@@ -2,71 +2,82 @@ const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
+// ENABLE CORS
 app.use(cors());
 
-// API
+// OPTIONAL STATIC (aman di Vercel juga)
+app.use(express.static("public"));
+
 app.get("/api/apbd", async (req, res) => {
 
-  try {
+    try {
 
-    const periode = req.query.periode || "1";
-    const tahun = req.query.tahun || "2026";
-    const provinsi = req.query.provinsi || "01";
-    const pemda = req.query.pemda || "10";
+        const periode = req.query.periode || "1";
+        const tahun = req.query.tahun || "2026";
+        const provinsi = req.query.provinsi || "01";
+        const pemda = req.query.pemda || "10";
 
-    const url =
-      `https://djpk.kemenkeu.go.id/portal/data/apbd?periode=${periode}&tahun=${tahun}&provinsi=${provinsi}&pemda=${pemda}`;
+        const targetUrl =
+            `https://djpk.kemenkeu.go.id/portal/data/apbd?periode=${periode}&tahun=${tahun}&provinsi=${provinsi}&pemda=${pemda}`;
 
-    const response = await axios.get(url);
-    const $ = cheerio.load(response.data);
+        const response = await axios.get(targetUrl);
 
-    const hasil = [];
+        const $ = cheerio.load(response.data);
 
-    $("#tbl_data tbody tr").each((i, el) => {
+        const hasil = [];
 
-      const td = $(el).find("td");
+        $("#tbl_data tbody tr").each((i, el) => {
 
-      if(td.length >= 5){
+            const td = $(el).find("td");
 
-        const akun = $(td[1]).text().trim();
+            if (td.length >= 5) {
 
-        const style = $(td[1]).attr("style") || "";
+                const akun = $(td[1]).text().trim();
 
-        let level = 1;
+                const style = $(td[1]).attr("style") || "";
 
-        if(style.includes("2em")) level = 2;
-        if(style.includes("4em")) level = 3;
+                let level = 1;
 
-        hasil.push({
-          akun,
-          level,
-          anggaran: $(td[2]).text().trim(),
-          realisasi: $(td[3]).text().trim(),
-          persen: parseFloat($(td[4]).text().trim().replace(",", "."))
+                if (style.includes("2em")) level = 2;
+                if (style.includes("4em")) level = 3;
+
+                hasil.push({
+                    akun,
+                    level,
+                    anggaran: $(td[2]).text().trim(),
+                    realisasi: $(td[3]).text().trim(),
+                    persen: parseFloat(
+                        $(td[4]).text().trim().replace(",", ".")
+                    )
+                });
+
+            }
+
         });
 
-      }
+        // ===== RESPONSE TETAP SAMA PERSIS =====
+        return res.json({
+            success: true,
+            metadata: {
+                judul: $("#judul").text().trim(),
+                wilayah: $("#wilayah").text().trim(),
+                keterangan: $("#keterangan").text().trim()
+            },
+            data: hasil
+        });
 
-    });
+    } catch (err) {
 
-    res.json({
-      success: true,
-      data: hasil
-    });
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
 
-  } catch(err){
-    res.status(500).json({ error: err.message });
-  }
+    }
 
-});
-
-// SERVE FRONTEND (INI YANG SERING LUPA)
-app.get("/", (req, res) => {
-  res.sendFile(path.join(process.cwd(), "public", "index.html"));
 });
 
 module.exports = app;
